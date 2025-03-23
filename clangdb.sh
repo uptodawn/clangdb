@@ -45,8 +45,7 @@ append_include_dirs()
 			.arguments[0]
 		elif has("command") then
 			.command | split(" ") | first
-		else null end
-	' $db | sed 's/null//g' | sort -u)
+		else null end' $db | sed 's/null//g' | sort -u)
 
 	for c in $cs; do
 		cc=${c#\"}
@@ -83,8 +82,7 @@ append_include_dirs()
 				if .command | startswith($c) then
 					.command += \"$cmd\"
 				else . end
-			else . end
-		)" $db > $tmp
+			else . end)" $db > $tmp
 		if [ $? -eq 0 ]; then
 			cat $tmp > $db
 		fi
@@ -151,5 +149,16 @@ Index:
     File: $clangd_dex
 EOF
 	clangd-indexer --executor=all-TUs $compile_db  > $clangd_dex
+;;
+find)
+	path=$(realpath $1)
+	[ -z "$path" ] && return
+
+	jq ".[] |
+		if .file | startswith(\"/\") then
+			select(.file == \"$path\") | .
+		else
+			select(.directory + \"/\" + .file == \"$path\") | .
+		end" $compile_db
 ;;
 esac
