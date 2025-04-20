@@ -52,24 +52,14 @@ append_include_dirs()
 		cc=${c#\"}
 		cc=${cc%\"}
 
-		# subsitition
-		case $cc in
-		*/"cc" | "cc")
-			cc=${cc%"cc"}gcc
-		;;
-		*"g++")
-			cc=${cc%"++"}cc
-		;;
-		esac
-
 		dirs=$(get_include_dirs $cc)
 		[ -z "$dirs" ] && continue
-		copy_include_dirs $clangd_inc/${cc##*/} $dirs
+		copy_include_dirs $clangd_inc $dirs
 
 		unset arg cmd
 		for i in $dirs; do
 			i=$(echo $i | md5sum)
-			i=-isystem$PWD/$clangd_inc/${cc##*/}/${i%%" "*}
+			i=-isystem$PWD/$clangd_inc/${i%%" "*}
 			arg=$arg,\"$i\"
 			cmd="$cmd $i"
 		done
